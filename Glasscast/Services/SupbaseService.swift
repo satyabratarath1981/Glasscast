@@ -5,12 +5,6 @@
 //  Created by Satyabrata Rath on 18/01/26.
 //
 
-//
-//  SupabaseService.swift
-//  Glasscast
-//
-//  Services/SupabaseService.swift
-//
 
 import Foundation
 import Supabase
@@ -63,54 +57,98 @@ class SupabaseService {
             supabaseURL: supabaseURL,
             supabaseKey: supabaseKey
         )
+        
+        print("🔧 SupabaseService initialized")
+        print("📍 URL: \(supabaseURL.absoluteString)")
     }
     
     // MARK: - Authentication
     
     func signIn(email: String, password: String) async throws {
+        print("🔐 Attempting sign in for: \(email)")
+        
         do {
-            _ = try await client.auth.signIn(
+            let response = try await client.auth.signIn(
                 email: email,
                 password: password
             )
+            
+            print("✅ Sign in successful")
+            print("✅ User ID: \(response.user.id)")
+            //print("✅ Session exists: \(response.session != nil)")
+            
         } catch {
+            print("❌ Sign in failed: \(error)")
             throw mapAuthError(error)
         }
     }
     
     func signUp(email: String, password: String) async throws {
+        print("📝 Attempting sign up for: \(email)")
+        
         do {
-            _ = try await client.auth.signUp(
+            let response = try await client.auth.signUp(
                 email: email,
                 password: password
             )
+            
+            print("✅ Sign up successful")
+            print("✅ User ID: \(response.user.id)")
+            
         } catch {
+            print("❌ Sign up failed: \(error)")
             throw mapAuthError(error)
         }
     }
     
     func signOut() async throws {
+        print("🚪 Attempting sign out")
+        
         do {
             try await client.auth.signOut()
+            print("✅ Sign out successful")
         } catch {
+            print("❌ Sign out failed: \(error)")
             throw mapAuthError(error)
         }
     }
     
     func resetPassword(email: String) async throws {
+        print("🔄 Attempting password reset for: \(email)")
+        
         do {
             try await client.auth.resetPasswordForEmail(email)
+            print("✅ Password reset email sent")
         } catch {
+            print("❌ Password reset failed: \(error)")
             throw mapAuthError(error)
         }
     }
     
     func getCurrentSession() async throws -> Session? {
+        print("🔍 Getting current session...")
+        
         do {
             let session = try await client.auth.session
+            
+            if session != nil {
+                print("✅ Session found")
+            } else {
+                print("❌ No session found")
+            }
+            
             return session
         } catch {
-            return nil
+            print("❌ Session retrieval failed: \(error)")
+            
+            // If error is about no session, return nil instead of throwing
+            let errorMessage = error.localizedDescription.lowercased()
+            if errorMessage.contains("session") || errorMessage.contains("not found") {
+                print("ℹ️ No active session (this is normal if not logged in)")
+                return nil
+            }
+            
+            throw error
         }
     }
     
@@ -127,6 +165,8 @@ class SupabaseService {
     
     private func mapAuthError(_ error: Error) -> AuthError {
         let errorMessage = error.localizedDescription.lowercased()
+        
+        print("🔍 Mapping error: \(errorMessage)")
         
         if errorMessage.contains("invalid") || errorMessage.contains("credentials") {
             return .invalidCredentials

@@ -5,12 +5,6 @@
 //  Created by Satyabrata Rath on 18/01/26.
 //
 
-//
-//  LoginView.swift
-//  Glasscast
-//
-//  Views/Auth/LoginView.swift
-//
 
 import SwiftUI
 
@@ -76,6 +70,7 @@ struct LoginView: View {
                             .textContentType(.emailAddress)
                             .keyboardType(.emailAddress)
                             .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
@@ -106,7 +101,7 @@ struct LoginView: View {
                                 // Handle forgot password
                             }
                             .font(.subheadline)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(.white)
                         }
                         
                         SecureField("", text: $password)
@@ -138,6 +133,7 @@ struct LoginView: View {
                             if viewModel.isLoading {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
                             } else {
                                 Text("Log In")
                                     .fontWeight(.semibold)
@@ -146,7 +142,7 @@ struct LoginView: View {
                         }
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .frame(height: 50)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(.blue.opacity(0.3))
@@ -169,6 +165,19 @@ struct LoginView: View {
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(.red.opacity(0.1))
+                            )
+                    }
+                    
+                    // Success Message (for debugging)
+                    if viewModel.loginSuccess {
+                        Text("Login successful! Redirecting...")
+                            .font(.subheadline)
+                            .foregroundStyle(.green)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(.green.opacity(0.1))
                             )
                     }
                     
@@ -207,6 +216,11 @@ struct LoginView: View {
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.5))
                 .padding(.bottom, 40)
+            }
+        }
+        .onChange(of: viewModel.loginSuccess) { oldValue, newValue in
+            if newValue {
+                print("📢 LoginView detected login success")
             }
         }
     }

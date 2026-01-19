@@ -5,12 +5,6 @@
 //  Created by Satyabrata Rath on 18/01/26.
 //
 
-//
-//  AuthViewModel.swift
-//  Glasscast
-//
-//  ViewModels/AuthViewModel.swift
-//
 
 import SwiftUI
 import Combine
@@ -22,6 +16,7 @@ class AuthViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var emailError: String?
     @Published var passwordError: String?
+    @Published var loginSuccess = false // Add this
     
     private let supabaseService = SupabaseService.shared
     
@@ -71,26 +66,54 @@ class AuthViewModel: ObservableObject {
     // MARK: - Authentication Methods
     
     func login(email: String, password: String) async {
+        print("🔵 Login started for: \(email)")
+        
         // Clear previous errors
         errorMessage = nil
         emailError = nil
         passwordError = nil
+        loginSuccess = false
         
         // Validate inputs
         guard validate(email: email, password: password) else {
+            print("🔴 Validation failed")
             return
         }
         
         isLoading = true
         
         do {
+            print("🔵 Calling Supabase signIn")
             try await supabaseService.signIn(email: email, password: password)
+            
+            print("✅ Login successful!")
+            
+            // Set success flags
             isAuthenticated = true
+            loginSuccess = true
             errorMessage = nil
+            
+            // Small delay to ensure session is saved
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+            
+            // Post notification
+            print("🔵 Posting UserDidLogin notification")
+            NotificationCenter.default.post(
+                name: NSNotification.Name("UserDidLogin"),
+                object: nil
+            )
+            
+            print("✅ Login flow completed successfully")
         } catch let error as AuthError {
+            print("🔴 Auth error: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
+            isAuthenticated = false
+            loginSuccess = false
         } catch {
+            print("🔴 Unexpected error: \(error)")
             errorMessage = "An unexpected error occurred. Please try again."
+            isAuthenticated = false
+            loginSuccess = false
         }
         
         isLoading = false
@@ -112,7 +135,6 @@ class AuthViewModel: ObservableObject {
         do {
             try await supabaseService.signUp(email: email, password: password)
             errorMessage = nil
-            // Note: User might need to verify email before being authenticated
         } catch let error as AuthError {
             errorMessage = error.localizedDescription
         } catch {
@@ -128,6 +150,7 @@ class AuthViewModel: ObservableObject {
         do {
             try await supabaseService.signOut()
             isAuthenticated = false
+            loginSuccess = false
             errorMessage = nil
         } catch {
             errorMessage = "Failed to sign out. Please try again."
@@ -149,7 +172,6 @@ class AuthViewModel: ObservableObject {
         do {
             try await supabaseService.resetPassword(email: email)
             errorMessage = nil
-            // Show success message to user
         } catch let error as AuthError {
             errorMessage = error.localizedDescription
         } catch {

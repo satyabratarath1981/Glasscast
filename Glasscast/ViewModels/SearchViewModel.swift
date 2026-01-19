@@ -6,13 +6,6 @@
 //
 
 
-//
-//  SearchViewModel.swift
-//  Glasscast
-//
-//  ViewModels/SearchViewModel.swift
-//
-
 import SwiftUI
 import Combine
 

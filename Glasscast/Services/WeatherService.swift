@@ -6,13 +6,6 @@
 //
 
 
-//
-//  WeatherService.swift
-//  Glasscast
-//
-//  Services/WeatherService.swift
-//
-
 import Foundation
 
 // MARK: - Weather Models
@@ -54,7 +47,7 @@ struct CitySearchResult: Identifiable, Codable {
 actor WeatherService {
     static let shared = WeatherService()
     
-    private let apiKey = "YOUR_API_KEY_HERE"
+    private let apiKey = "ebec42adfbb1c738bf2c44d4dc54c54c"
     private let baseURL = "https://api.openweathermap.org/data/2.5"
     private let session: URLSession
     
